@@ -10,10 +10,13 @@ dotenv.config();
 
 // Constants
 const SATOSHIS_PER_DOGE = 1e8;
-const DUST_THRESHOLD = 1000; // Minimum satoshis for change output
+const DUST_THRESHOLD = 100000; // Minimum satoshis for an output
 const BASE_TX_SIZE = 10; // Base transaction size in bytes
 const INPUT_SIZE = 148; // Approx size per input in bytes
 const OUTPUT_SIZE = 34; // Approx size per output in bytes
+
+// Override bitcore-lib-doge's default dust amount
+bitcore.Transaction.DUST_AMOUNT = DUST_THRESHOLD;
 
 // Load environment variables
 const SENDER_ADDRESS = process.env.SENDER_ADDRESS;
