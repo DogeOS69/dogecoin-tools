@@ -48,7 +48,7 @@ program
   .argument('<amount>', 'Amount to send in Dogecoin', parseFloat)
   .option('-o, --op-return <string>', 'Optional OP_RETURN string')
   .option('-f, --fee <fee>', 'Fee in DOGE/kb (default: 0.01)', parseFloat, 0.01)
-  .option('-t, --testnet', 'Use Dogecoin testnet (default: true)', true)
+  .option('-t, --testnet', 'Use Dogecoin testnet (default: false)', false)
   .option('-s, --send', 'Send the transaction (default: false)', false)
   .action(async (recipient: string, amount: number, options: any) => {
     console.log('CLI Arguments:', { recipient, amount, ...options });
