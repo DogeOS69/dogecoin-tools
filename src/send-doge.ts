@@ -86,19 +86,24 @@ program
     const utxoResponse = await nownodes.get(
       `${apiBase}/api/v2/utxo/${SENDER_ADDRESS}`
     );
-    const rawUtxos: { txid: string; vout: number; value: number }[] =
-      utxoResponse.data;
+    const rawUtxos: {
+      txid: string;
+      vout: number;
+      value: number;
+      height: number;
+    }[] = utxoResponse.data;
 
     // Map UTXOs to bitcore format
     const utxos = rawUtxos.map((utxo) => ({
       txid: utxo.txid,
       vout: utxo.vout,
       satoshis: Number(utxo.value),
+      height: Number(utxo.height),
     }));
     console.log(`Fetched ${utxos.length} UTXOs`);
 
-    // Sort UTXOs by amount descending for greedy selection
-    utxos.sort((a, b) => b.satoshis - a.satoshis);
+    // Oldest first
+    utxos.sort((a, b) => a.height - b.height);
 
     // Select UTXOs with logging
     const inputs: typeof utxos = [];
