@@ -1,9 +1,9 @@
 #!/usr/bin/env ts-node
 
-import * as dotenv from 'dotenv';
-import { program } from 'commander';
-import axios from 'axios';
-import * as bitcore from 'bitcore-lib-doge';
+import * as dotenv from "dotenv";
+import { program } from "commander";
+import axios from "axios";
+import * as bitcore from "bitcore-lib-doge";
 
 // Configure dotenv to load environment variables
 dotenv.config();
@@ -28,7 +28,7 @@ const NOWNODES_API_KEY = process.env.NOWNODES_API_KEY;
 
 export const nownodes = axios.create({
   headers: {
-    'api-key': NOWNODES_API_KEY,
+    "api-key": NOWNODES_API_KEY,
   },
 });
 
@@ -40,21 +40,21 @@ if (
   !RPC_PASSWORD ||
   !NOWNODES_API_KEY
 ) {
-  console.error('Error: Missing required environment variables in .env');
+  console.error("Error: Missing required environment variables in .env");
   process.exit(1);
 }
-console.log('Loaded environment variables successfully');
+console.log("Loaded environment variables successfully");
 
 // Parse CLI arguments
 program
-  .argument('<recipient>', 'Recipient Dogecoin address')
-  .argument('<amount>', 'Amount to send in Dogecoin', parseFloat)
-  .option('-o, --op-return <string>', 'Optional OP_RETURN string')
-  .option('-f, --fee <fee>', 'Fee in DOGE/kb (default: 0.01)', parseFloat, 0.01)
-  .option('-t, --testnet', 'Use Dogecoin testnet (default: false)', false)
-  .option('-s, --send', 'Send the transaction (default: false)', false)
+  .argument("<recipient>", "Recipient Dogecoin address")
+  .argument("<amount>", "Amount to send in Dogecoin", parseFloat)
+  .option("-o, --op-return <string>", "Optional OP_RETURN string")
+  .option("-f, --fee <fee>", "Fee in DOGE/kb (default: 0.01)", parseFloat, 0.01)
+  .option("-t, --testnet", "Use Dogecoin testnet (default: false)", false)
+  .option("-s, --send", "Send the transaction (default: false)", false)
   .action(async (recipient: string, amount: number, options: any) => {
-    console.log('CLI Arguments:', { recipient, amount, ...options });
+    console.log("CLI Arguments:", { recipient, amount, ...options });
 
     // Set network
     const isTestnet = options.testnet;
@@ -62,7 +62,7 @@ program
       ? bitcore.Networks.testnet
       : bitcore.Networks.livenet;
     console.log(
-      `Using network: ${isTestnet ? 'dogecoin-testnet' : 'dogecoin-mainnet'}`
+      `Using network: ${isTestnet ? "dogecoin-testnet" : "dogecoin-mainnet"}`
     );
 
     // Convert amounts to satoshis
@@ -76,12 +76,12 @@ program
 
     // Initialize private key
     const privateKey = new bitcore.PrivateKey(PRIVATE_KEY_WIF, network);
-    console.log('Private key initialized');
+    console.log("Private key initialized");
 
     // Fetch UTXOs
     const apiBase = isTestnet
-      ? 'https://dogebook-testnet.nownodes.io'
-      : 'https://dogebook.nownodes.io';
+      ? "https://dogebook-testnet.nownodes.io"
+      : "https://dogebook.nownodes.io";
     console.log(`Fetching UTXOs from ${apiBase}`);
     const utxoResponse = await nownodes.get(
       `${apiBase}/api/v2/utxo/${SENDER_ADDRESS}`
@@ -110,7 +110,7 @@ program
       (BASE_TX_SIZE + INPUT_SIZE * nInputs + OUTPUT_SIZE * numberOfOutputs) *
       feeRate;
 
-    console.log('Selecting UTXOs:');
+    console.log("Selecting UTXOs:");
     while (
       availableUtxos.length > 0 &&
       totalInput < amountSat + calculateEstimatedFee(inputs.length + 1)
@@ -130,7 +130,7 @@ program
     }
 
     if (totalInput < amountSat + calculateEstimatedFee(inputs.length)) {
-      console.error('Error: Insufficient funds even with all UTXOs');
+      console.error("Error: Insufficient funds even with all UTXOs");
       process.exit(1);
     }
     console.log(
@@ -154,25 +154,25 @@ program
 
     // Add OP_RETURN if provided
     if (options.opReturn) {
-      if (Buffer.from(options.opReturn, 'hex').length > 80) {
-        console.error('Error: OP_RETURN data exceeds 80 bytes');
+      if (Buffer.from(options.opReturn, "hex").length > 80) {
+        console.error("Error: OP_RETURN data exceeds 80 bytes");
         process.exit(1);
       }
-      tx.addData(Buffer.from(options.opReturn, 'hex'));
+      tx.addData(Buffer.from(options.opReturn, "hex"));
       console.log(`Added OP_RETURN: ${options.opReturn}`);
     }
 
     // Always set change address to handle remaining funds
     tx.change(SENDER_ADDRESS);
-    console.log('Change address set to:', SENDER_ADDRESS);
+    console.log("Change address set to:", SENDER_ADDRESS);
 
     // Sign the transaction
     tx.sign(privateKey);
-    console.log('Transaction built and signed');
+    console.log("Transaction built and signed");
 
     // Serialize and calculate final details
     const serializedTx = tx.serialize();
-    const txSize = Buffer.from(serializedTx, 'hex').length;
+    const txSize = Buffer.from(serializedTx, "hex").length;
     const exactFee = tx.getFee();
     const changeSat = tx.getChangeOutput()?.satoshis || 0;
 
@@ -191,7 +191,7 @@ program
 
     // Verify sufficient funds
     if (totalInput < amountSat + exactFee) {
-      console.error('Error: Insufficient funds');
+      console.error("Error: Insufficient funds");
       process.exit(1);
     }
 
@@ -201,30 +201,35 @@ program
       `Transaction balance check: Total input (${totalInput}) vs Total output + fee (${totalOutput})`
     );
     if (totalInput !== totalOutput) {
-      console.error('Error: Transaction does not balance');
+      console.error("Error: Transaction does not balance");
       process.exit(1);
     }
 
     // Send transaction if enabled
     if (options.send) {
-      console.log('Sending transaction to RPC');
-      const rpcResponse = await axios.post(
-        RPC_URL,
-        {
-          jsonrpc: '1.0',
-          id: '1',
-          method: 'sendrawtransaction',
-          params: [serializedTx],
-        },
-        {
-          auth: { username: RPC_USER, password: RPC_PASSWORD },
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+      console.log("Sending transaction to RPC");
+      const rpcResponse = await axios
+        .post(
+          RPC_URL,
+          {
+            jsonrpc: "1.0",
+            id: "1",
+            method: "sendrawtransaction",
+            params: [serializedTx],
+          },
+          {
+            auth: { username: RPC_USER, password: RPC_PASSWORD },
+            headers: { "Content-Type": "application/json" },
+          }
+        )
+        .catch((error) => {
+          console.error("Error sending transaction:", error.response.data);
+          process.exit(1);
+        });
       console.log(`Transaction sent. TxID: ${rpcResponse.data.result}`);
     } else {
       console.log(
-        'Send flag is false. Serialized transaction (for debugging):',
+        "Send flag is false. Serialized transaction (for debugging):",
         serializedTx
       );
     }
